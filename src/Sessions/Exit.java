@@ -1,0 +1,9 @@
+package Sessions;
+
+public class Exit implements Command {
+    @Override
+    public void execute(String fullInput) {
+        System.out.println("Exiting program...");
+        System.exit(0);
+    }
+}
