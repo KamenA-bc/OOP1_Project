@@ -56,7 +56,7 @@ public class Close implements Command {
             System.out.println("Closed specified files from session " + sessionId);
         }
 
-        // Rebuild and update the last session line
+
         StringBuilder updatedLine = new StringBuilder();
         updatedLine.append(sessionId);
         for (String file : currentFiles) {

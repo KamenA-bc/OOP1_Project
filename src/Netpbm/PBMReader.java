@@ -1,5 +1,7 @@
 package Netpbm;
 
+import Netpbm.Enums.Format;
+
 import java.io.*;
 import java.util.Scanner;
 
@@ -15,15 +17,15 @@ public class PBMReader implements NetpbmImageReader {
             int width = sc.nextInt();
             int height = sc.nextInt();
 
-            int[][][] data = new int[height][width][1]; // 1 channel (black/white)
+            int[][][] data = new int[height][width][1];
 
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    data[y][x][0] = sc.nextInt(); // 0 or 1
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    data[i][j][0] = sc.nextInt();
                 }
             }
 
-            return new LoadedImage(filePath, LoadedImage.Format.PBM, width, height, 1, data);
+            return new LoadedImage(filePath, Format.PBM, width, height, 1, data);
         }
     }
 }

@@ -12,17 +12,7 @@ public class Load implements Command {
     @Override
     public void execute(String fullInput) {
         String[] tokens = fullInput.trim().split("\\s+");
-        List<LoadedImage> loadedImages = new ArrayList<>();
-
-        for (int i = 1; i < tokens.length; i++) {
-            String filename = tokens[i];
-            LoadedImage image = loadImage(filename);
-            if (image != null) {
-                loadedImages.add(image);
-            } else {
-                System.out.println("Skipped invalid or unsupported file: " + filename);
-            }
-        }
+        List<LoadedImage> loadedImages = NetPBMImageLoader.loadImagesFromTokens(tokens, 1);
 
         if (loadedImages.isEmpty()) {
             System.out.println("No valid image files were provided.");
@@ -54,36 +44,6 @@ public class Load implements Command {
             if (i < loadedImages.size() - 1) System.out.print(" ");
         }
         System.out.println(" added");
-    }
-
-    private LoadedImage loadImage(String filename) {
-        File file = new File(filename);
-        if (!file.exists()) {
-            System.out.println("File not found: " + filename);
-            return null;
-        }
-
-        String ext = getExtension(filename).toLowerCase();
-        try {
-            switch (ext) {
-                case "pbm":
-                    return new PBMReader().read(filename);
-                case "pgm":
-                    return new PGMReader().read(filename);
-                case "ppm":
-                    return new PPMReader().read(filename);
-                default:
-                    return null;
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading " + filename + ": " + e.getMessage());
-            return null;
-        }
-    }
-
-    private String getExtension(String filename) {
-        int dot = filename.lastIndexOf('.');
-        return (dot > 0 && dot < filename.length() - 1) ? filename.substring(dot + 1) : "";
     }
 }
 

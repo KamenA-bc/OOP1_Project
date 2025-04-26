@@ -1,14 +1,15 @@
 package Netpbm;
 
+import Netpbm.Enums.Format;
+
 public class LoadedImage {
-    public enum Format { PBM, PGM, PPM }
 
     private final String filename;
     private final Format format;
-    private final int width;
-    private final int height;
-    private final int maxVal; // 1 for PBM, 255 or other for PGM/PPM
-    private final int[][][] pixelData; // [height][width][RGB or grayscale]
+    private  int width;
+    private  int height;
+    private final int maxVal;
+    private  int[][][] pixelData; // [height][width][RGB]
 
     public LoadedImage(String filename, Format format, int width, int height, int maxVal, int[][][] pixelData) {
         this.filename = filename;
@@ -41,5 +42,17 @@ public class LoadedImage {
 
     public int[][][] getPixelData() {
         return pixelData;
+    }
+
+    public void setPixelData(int[][][] pixelData) {
+        this.pixelData = pixelData;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 }
