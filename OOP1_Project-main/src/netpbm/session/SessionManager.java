@@ -3,6 +3,7 @@ package netpbm.session;
 import netpbm.image.NetpbmImage;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Collection;
 
@@ -30,6 +31,28 @@ public class SessionManager {
         int id = nextSessionId++;
         Session session = new Session(id);
         session.addImage(image);
+        sessions.put(id, session);
+        activeSessionId = id;
+        System.out.println("New session started. Session ID: " + id);
+    }
+    
+    /**
+     * Creates a new session containing all provided images.
+     * <p>
+     * Assigns a unique session ID, adds all images to the session,
+     * registers it in the global session map, and marks it as the active session.
+     * A message is printed to indicate successful session creation.
+     *
+     * @param images A list of NetpbmImage objects to include in the session.
+     */
+    public static void createSessionWithImages(List<NetpbmImage> images) {
+        int id = nextSessionId++;
+        Session session = new Session(id);
+
+        for (NetpbmImage image : images) {
+            session.addImage(image);
+        }
+
         sessions.put(id, session);
         activeSessionId = id;
         System.out.println("New session started. Session ID: " + id);

@@ -49,7 +49,7 @@ public class Session {
      * @return The first loaded image or {@code null}.
      */
     public NetpbmImage getFirstImage() {
-        return images.isEmpty() ? null : images.get(0);
+        return images.isEmpty() ? null : images.getFirst();
     }
 
     /**
