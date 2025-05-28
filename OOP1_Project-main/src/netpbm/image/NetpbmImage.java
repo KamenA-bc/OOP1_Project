@@ -51,10 +51,7 @@ public class NetpbmImage implements Cloneable {
     public int[][][] getPixels() {
         return pixels;
     }
-
-    public int getPixel(int y, int x, int channel) {
-        return pixels[y][x][channel];
-    }
+    
 
     public void setFormat(String format) {
         this.format = format;
