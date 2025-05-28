@@ -21,21 +21,7 @@ public class SessionManager {
     private static int nextSessionId = 1;
     private static int activeSessionId = -1;
 
-    /**
-     * Creates a new session initialized with a single image and sets it as active.
-     * The session is assigned a unique ID and stored internally.
-     *
-     * @param image The image to load into the new session.
-     */
-    public static void createSessionWithSingleImage(NetpbmImage image) {
-        int id = nextSessionId++;
-        Session session = new Session(id);
-        session.addImage(image);
-        sessions.put(id, session);
-        activeSessionId = id;
-        System.out.println("New session started. Session ID: " + id);
-    }
-    
+
     /**
      * Creates a new session containing all provided images.
      * <p>

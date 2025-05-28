@@ -51,7 +51,7 @@ public class NetpbmImage implements Cloneable {
     public int[][][] getPixels() {
         return pixels;
     }
-    
+
 
     public void setFormat(String format) {
         this.format = format;
@@ -63,10 +63,6 @@ public class NetpbmImage implements Cloneable {
 
     public void setHeight(int height) {
         this.height = height;
-    }
-
-    public void setMaxVal(int maxVal) {
-        this.maxVal = maxVal;
     }
 
     public void setPixels(int[][][] pixels) {

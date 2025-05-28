@@ -3,6 +3,7 @@ package netpbm.session;
 import netpbm.image.ImageMemento;
 import netpbm.image.NetpbmImage;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -53,13 +54,28 @@ public class Session {
     }
 
     /**
-     * Removes an image from the session by its file name.
+     * Removes an image from the session whose file name matches the given name,
+     * ignoring case sensitivity.
+     * <p>
+     * Iterates through all loaded images and removes the first or multiple matches
+     * if any exist. Uses an iterator to safely remove items during iteration.
      *
      * @param fileName The name of the file to remove.
-     * @return {@code true} if an image was removed; {@code false} otherwise.
+     * @return {@code true} if at least one image was removed; {@code false} if no match was found.
      */
     public boolean removeImageByName(String fileName) {
-        return images.removeIf(img -> fileName.equalsIgnoreCase(img.getFileName()));
+        Iterator<NetpbmImage> iterator = images.iterator();
+        boolean removed = false;
+
+        while (iterator.hasNext()) {
+            NetpbmImage img = iterator.next();
+            if (fileName.equalsIgnoreCase(img.getFileName())) {
+                iterator.remove();
+                removed = true;
+            }
+        }
+
+        return removed;
     }
 
     /**
