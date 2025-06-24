@@ -4,17 +4,20 @@ import netpbm.image.NetPBMImages;
 import java.io.*;
 import java.util.*;
 
+
 /**
- * Utility class for loading Netpbm images based on their format.
+ * Utility class for loading NetPBM image files (PBM, PGM, PPM).
  * <p>
- * Determines the image type from the file's magic number and delegates to the appropriate reader.
- * Supports PBM (P1), PGM (P2), and PPM (P3) formats.
+ * Automatically detects the image format based on the file's header and delegates
+ * the reading process to the appropriate format-specific reader.
+ * </p>
  */
 public class NetpbmLoader {
 
+    /** Maps format identifiers (P1, P2, P3) to their corresponding reader implementations. */
     private static final Map<String, Readers> readerMap = new HashMap<>();
 
-    // Static block to register known readers
+    // Static initialization block to populate the reader map.
     static {
         readerMap.put("P1", new PBMReader());
         readerMap.put("P2", new PGMReader());
@@ -22,18 +25,21 @@ public class NetpbmLoader {
     }
 
     /**
-     * Loads a NetPBM image using the appropriate reader implementation
-     * based on the magic number (P1, P2, P3) in the file header.
+     * Loads a NetPBM image from the specified file.
+     * <p>
+     * Determines the format by reading the header and delegates to the correct
+     * {@code Readers} implementation.
+     * </p>
      *
-     * @param file The NetPBM file to load
-     * @return A parsed NetPBMImages object
-     * @throws IOException If the file cannot be read or the format is unsupported
+     * @param file the file containing the NetPBM image
+     * @return a {@code NetPBMImages} instance representing the loaded image
+     * @throws IOException if the file is invalid or unsupported
      */
     public static NetPBMImages load(File file) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
 
-            // Skip comments and blank lines
+            // Skip blank lines and comments
             do {
                 line = reader.readLine();
             } while (line != null && (line.trim().isEmpty() || line.startsWith("#")));
@@ -49,11 +55,11 @@ public class NetpbmLoader {
                 throw new IOException("Unsupported NetPBM format: " + format);
             }
 
-            // Use the correct reader implementation to load the file
             return readerImpl.read(file.getPath());
         }
     }
 }
+
 
 
 

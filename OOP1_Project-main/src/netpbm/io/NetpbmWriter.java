@@ -5,14 +5,25 @@ import netpbm.image.Pixel;
 
 import java.io.*;
 
+/**
+ * Utility class for writing NetPBM images (PBM, PGM, PPM) to files.
+ * <p>
+ * Supports saving images in plain-text formats: P1 (binary), P2 (grayscale), and P3 (color),
+ * based on the image's format metadata.
+ * </p>
+ */
 public class NetpbmWriter {
 
     /**
-     * Saves the given image to the specified file in Netpbm format.
+     * Saves a {@code NetPBMImages} object to the specified file using its native NetPBM format.
+     * <p>
+     * The output includes the format identifier, dimensions, optional max value,
+     * and the image's pixel data formatted according to the type (P1, P2, or P3).
+     * </p>
      *
-     * @param img  The image to save.
-     * @param file The output file.
-     * @throws IOException If an error occurs during writing.
+     * @param img  the image object to be saved
+     * @param file the destination file
+     * @throws IOException if writing to the file fails
      */
     public static void save(NetPBMImages img, File file) throws IOException {
         try (PrintWriter out = new PrintWriter(file)) {

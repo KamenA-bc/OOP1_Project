@@ -6,18 +6,22 @@ import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
 /**
- * Command that inverts the pixel values of all images in the active session, excluding PBM (P1) images.
+ * Command for applying a negative (color inversion) effect to all images in the active session.
  * <p>
- * For each channel value, the negative is calculated as {@code maxVal - currentValue}.
- * PBM images are skipped since they only contain binary values (0 or 1).
- * The session state is saved before modification.
+ * Supports inversion for binary (PBM), grayscale (PGM), and color (PPM) images.
+ * The original state is saved to allow undo.
+ * </p>
  */
 public class NegativeCommand implements Command {
 
     /**
-     * Applies the negative transformation to each image in the active session.
+     * Executes the negative command.
+     * <p>
+     * Inverts all images in the current session by modifying pixel values
+     * based on their format. Stores the previous state for undo functionality.
+     * </p>
      *
-     * @param args Not used.
+     * @param args not used for this command
      */
     @Override
     public void execute(String[] args) {
@@ -38,9 +42,14 @@ public class NegativeCommand implements Command {
     }
 
     /**
-     * Applies the negative filter to the given image.
+     * Applies a negative transformation to the specified image.
+     * <p>
+     * For PBM: flips 0 to 1 and vice versa.
+     * For PGM: subtracts pixel value from max grayscale value.
+     * For PPM: inverts each RGB channel independently.
+     * </p>
      *
-     * @param image The image to modify.
+     * @param image the image to transform
      */
     private void applyNegative(NetPBMImages image) {
         int maxVal = image.getMaxVal();
@@ -48,7 +57,6 @@ public class NegativeCommand implements Command {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 Pixel p = image.getPixel(y, x);
-
 
                 if (image.getFormat().equals("P1")) {
                     int inverted = (p.getRed() == 0) ? 1 : 0;

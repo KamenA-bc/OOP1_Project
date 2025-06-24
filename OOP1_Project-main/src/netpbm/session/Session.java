@@ -7,13 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+
 /**
- * Represents a single image editing session.
- * <p>
- * A session groups together one or more loaded {@link NetpbmImage} objects
- * and tracks all operations applied to them. It also stores a history of
- * image states to support undo functionality and logs each transformation
- * as a textual description.
+ * Represents a user session containing a set of NetPBM images.
+ * Tracks image modifications and supports undo functionality.
  */
 public class Session {
 
@@ -38,10 +35,19 @@ public class Session {
         return images;
     }
 
+    /**
+     * Returns the first loaded image in the session, or {@code null} if none exist.
+     */
     public NetPBMImages getFirstImage() {
         return images.isEmpty() ? null : images.getFirst();
     }
 
+    /**
+     * Removes an image by file name, if it exists in the session.
+     *
+     * @param fileName the name of the image file to remove
+     * @return {@code true} if the image was found and removed, otherwise {@code false}
+     */
     public boolean removeImageByName(String fileName) {
         Iterator<NetPBMImages> iterator = images.iterator();
         boolean removed = false;
@@ -65,10 +71,18 @@ public class Session {
         return alternations;
     }
 
+    /**
+     * Saves the current state of the image list for potential restoration.
+     */
     public void saveState() {
         history.push(new ImageMemento(images));
     }
 
+    /**
+     * Restores the last saved image state and removes the most recent alternation.
+     *
+     * @return {@code true} if undo was successful, {@code false} if no history is available
+     */
     public boolean undo() {
         if (history.isEmpty()) return false;
 
@@ -84,5 +98,6 @@ public class Session {
         return true;
     }
 }
+
 
 

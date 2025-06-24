@@ -7,13 +7,26 @@ import netpbm.session.SessionManager;
 
 import java.io.File;
 
+
 /**
- * Command that saves all images in the active session to their original file names.
+ * Command for saving all images in the active session.
  * <p>
- * Uses {@link NetpbmWriter} to write image data to disk.
+ * Iterates over all images in the session and writes each one
+ * to disk using its current file name and format.
+ * </p>
  */
 public class SaveCommand implements Command {
 
+    /**
+     * Executes the save command.
+     * <p>
+     * If there is an active session, attempts to save each image
+     * in that session using {@code NetpbmWriter}. Images without
+     * assigned file names are skipped.
+     * </p>
+     *
+     * @param args not used in this command
+     */
     @Override
     public void execute(String[] args) {
         Session session = SessionManager.getActiveSession();

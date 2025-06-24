@@ -10,8 +10,24 @@ import java.io.File;
 
 
 
+/**
+ * Command for adding one or more NetPBM image files to the active session.
+ * <p>
+ * Ensures each file exists, avoids duplicate file names in the session,
+ * and loads each image using {@code NetpbmLoader}.
+ * </p>
+ */
 public class AddCommand implements Command {
 
+    /**
+     * Executes the add command.
+     * <p>
+     * Expects one or more file paths as arguments.
+     * Adds each valid, non-duplicate image to the active session.
+     * </p>
+     *
+     * @param args command-line arguments; expects {@code ["add", "file1", "file2", ...]}
+     */
     @Override
     public void execute(String[] args) {
         Session session = SessionManager.getActiveSession();
@@ -64,5 +80,4 @@ public class AddCommand implements Command {
         }
     }
 }
-
 

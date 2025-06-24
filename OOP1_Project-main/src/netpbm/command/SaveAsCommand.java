@@ -7,13 +7,25 @@ import netpbm.session.SessionManager;
 
 import java.io.File;
 
+
 /**
- * Command that saves the first image in the active session under a new file name.
+ * Command for saving the first image in the current session under a new file name.
  * <p>
- * This does not change the image's original file name in memory.
+ * Allows the user to specify a new output file name, independent of the original.
+ * Only the first image in the session is saved.
+ * </p>
  */
 public class SaveAsCommand implements Command {
 
+    /**
+     * Executes the saveas command.
+     * <p>
+     * Expects a single argument: the new file name. If a session exists and contains
+     * at least one image, the first image is saved to the specified file.
+     * </p>
+     *
+     * @param args command-line arguments; expects format {@code ["saveas", "new_filename"]}
+     */
     @Override
     public void execute(String[] args) {
         if (args.length != 2) {
@@ -39,5 +51,6 @@ public class SaveAsCommand implements Command {
         }
     }
 }
+
 
 

@@ -5,14 +5,26 @@ import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
+
 /**
- * Command that rotates all images in the active session 90 degrees to the left or right.
+ * Command for rotating all images in the active session.
  * <p>
- * Rotation is applied in-place to each image, updating both the pixel matrix and dimensions.
- * The session state is saved before modification.
+ * Supports 90-degree rotation in either the left (counterclockwise)
+ * or right (clockwise) direction. Updates each image in place.
+ * </p>
  */
 public class RotateCommand implements Command {
 
+    /**
+     * Executes the rotate command.
+     * <p>
+     * Validates direction argument and rotates all images in the
+     * current session accordingly. Supports undo by saving the
+     * previous session state.
+     * </p>
+     *
+     * @param args command-line arguments; expects {@code ["rotate", "left"]} or {@code ["rotate", "right"]}
+     */
     @Override
     public void execute(String[] args) {
         if (args.length != 2) {
@@ -43,10 +55,10 @@ public class RotateCommand implements Command {
     }
 
     /**
-     * Rotates the image 90 degrees in the specified direction.
+     * Rotates the given image 90 degrees in the specified direction.
      *
-     * @param image The image to rotate.
-     * @param rotateLeft If true, rotate left; otherwise, rotate right.
+     * @param image      the image to rotate
+     * @param rotateLeft if true, rotates left (counterclockwise); otherwise, rotates right (clockwise)
      */
     private void rotateImage(NetPBMImages image, boolean rotateLeft) {
         int height = image.getHeight();
@@ -66,10 +78,10 @@ public class RotateCommand implements Command {
             }
         }
 
-        // Update image state
         image.setPixels(rotated);
         image.setWidth(height);
         image.setHeight(width);
     }
 }
+
 

@@ -9,16 +9,25 @@ import netpbm.image.PGMImage;
 import netpbm.image.PBMImage;
 
 
+
 /**
- * Command that creates a collage from two loaded images in the active session.
+ * Command for creating a collage from two loaded images.
  * <p>
- * Supports horizontal and vertical collage directions. The two input images must have
- * the same dimensions and be present in the current session. A new image is created
- * by placing the two side-by-side (horizontal) or one above the other (vertical),
- * and added to the session under the specified output file name.
+ * Supports both horizontal and vertical collages. The images must have
+ * identical dimensions and be present in the current session.
+ * </p>
  */
 public class CollageCommand implements Command {
 
+    /**
+     * Executes the collage command.
+     * <p>
+     * Expects arguments: {@code collage <horizontal|vertical> <image1> <image2> <output>}.
+     * Combines two images from the current session into a new one, depending on the specified direction.
+     * </p>
+     *
+     * @param args command-line arguments specifying direction, image names, and output file name
+     */
     @Override
     public void execute(String[] args) {
         if (args.length != 5) {
@@ -78,6 +87,9 @@ public class CollageCommand implements Command {
         System.out.println("Collage created: " + output);
     }
 
+    /**
+     * Combines two images horizontally by placing them side by side.
+     */
     private NetPBMImages createHorizontalCollage(NetPBMImages img1, NetPBMImages img2) {
         int height = img1.getHeight();
         int width = img1.getWidth() * 2;
@@ -93,6 +105,9 @@ public class CollageCommand implements Command {
         return createTypedImage(width, height, resultPixels);
     }
 
+    /**
+     * Combines two images vertically by placing one below the other.
+     */
     private NetPBMImages createVerticalCollage(NetPBMImages img1, NetPBMImages img2) {
         int width = img1.getWidth();
         int height = img1.getHeight() * 2;
@@ -113,6 +128,9 @@ public class CollageCommand implements Command {
         return createTypedImage(width, height, resultPixels);
     }
 
+    /**
+     * Creates a new image of the appropriate type (PBM, PGM, or PPM) based on pixel content.
+     */
     private NetPBMImages createTypedImage(int width, int height, Pixel[][] pixels) {
         if (isOnlyBlackWhite(pixels)) {
             return new PBMImage(width, height, pixels);
@@ -123,6 +141,9 @@ public class CollageCommand implements Command {
         }
     }
 
+    /**
+     * Checks whether the image contains only black (0) and white (1) pixels.
+     */
     private boolean isOnlyBlackWhite(Pixel[][] pixels) {
         for (Pixel[] row : pixels) {
             for (Pixel p : row) {
@@ -135,6 +156,9 @@ public class CollageCommand implements Command {
         return true;
     }
 
+    /**
+     * Checks whether the image is grayscale (all RGB values are equal).
+     */
     private boolean isGrayscale(Pixel[][] pixels) {
         for (Pixel[] row : pixels) {
             for (Pixel p : row) {

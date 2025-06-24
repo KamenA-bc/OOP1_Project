@@ -1,11 +1,16 @@
 package netpbm.image;
 
+/**
+ * Represents a PPM (Portable Pixmap) image using the ASCII-based P3 format.
+ * Implements the {@code NetPBMImages} interface and stores full-color image data.
+ */
 public class PPMImage implements NetPBMImages {
-    private  int width;
-    private  int height;
-    private  int maxVal;
-    private  Pixel[][] pixels;
+    private int width;
+    private int height;
+    private int maxVal;
+    private Pixel[][] pixels;
     private String fileName;
+    private String format = "P3";
 
     public PPMImage(int width, int height, int maxVal) {
         this.width = width;
@@ -13,6 +18,7 @@ public class PPMImage implements NetPBMImages {
         this.maxVal = maxVal;
         this.pixels = new Pixel[height][width];
     }
+
     public PPMImage(int width, int height, int maxVal, Pixel[][] pixels) {
         this.width = width;
         this.height = height;
@@ -20,8 +26,6 @@ public class PPMImage implements NetPBMImages {
         this.pixels = pixels;
         this.format = "P3";
     }
-
-
 
     @Override
     public int getWidth() { return width; }
@@ -47,6 +51,12 @@ public class PPMImage implements NetPBMImages {
     @Override
     public void setFileName(String name) { this.fileName = name; }
 
+    /**
+     * Produces a deep copy of the current PPM image.
+     * Each pixel is cloned to ensure independence from the original.
+     *
+     * @return a cloned {@code NetPBMImages} instance
+     */
     @Override
     public NetPBMImages clone() {
         PPMImage copy = new PPMImage(width, height, maxVal);
@@ -57,8 +67,6 @@ public class PPMImage implements NetPBMImages {
         return copy;
     }
 
-    private String format = "P3";
-
     @Override
     public String getFormat() {
         return format;
@@ -68,6 +76,7 @@ public class PPMImage implements NetPBMImages {
     public void setFormat(String format) {
         this.format = format;
     }
+
     @Override
     public void setWidth(int width) {
         this.width = width;
@@ -82,5 +91,4 @@ public class PPMImage implements NetPBMImages {
     public void setPixels(Pixel[][] pixels) {
         this.pixels = pixels;
     }
-
 }

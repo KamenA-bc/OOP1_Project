@@ -1,25 +1,34 @@
 package netpbm.image;
 
+/**
+ * Represents a PBM (Portable BitMap) image using the ASCII-based P1 format.
+ * <p>
+ * This class models black-and-white (binary) images using a two-dimensional
+ * array of {@code Pixel} objects, where each pixel is expected to be either black or white.
+ * It implements the {@code NetPBMImages} interface, supporting image data access,
+ * manipulation, and duplication.
+ * </p>
+ */
 public class PBMImage implements NetPBMImages {
 
-    private  int width;
-    private  int height;
-    private  Pixel[][] pixels;
+    private int width;
+    private int height;
+    private Pixel[][] pixels;
     private String fileName;
-
+    private String format = "P1";
 
     public PBMImage(int width, int height) {
         this.width = width;
         this.height = height;
         this.pixels = new Pixel[height][width];
     }
+
     public PBMImage(int width, int height, Pixel[][] pixels) {
         this.width = width;
         this.height = height;
         this.pixels = pixels;
         this.format = "P1";
     }
-
 
     @Override
     public int getWidth() {
@@ -31,6 +40,14 @@ public class PBMImage implements NetPBMImages {
         return height;
     }
 
+    /**
+     * Returns the maximum pixel value supported by PBM format.
+     * <p>
+     * For binary images, this value is always 1.
+     * </p>
+     *
+     * @return 1, representing the binary nature of PBM images
+     */
     @Override
     public int getMaxVal() {
         return 1;
@@ -61,6 +78,15 @@ public class PBMImage implements NetPBMImages {
         this.fileName = name;
     }
 
+    /**
+     * Creates a deep copy of the current PBM image.
+     * <p>
+     * All pixel values and metadata are cloned to ensure
+     * complete independence from the original object.
+     * </p>
+     *
+     * @return a new {@code NetPBMImages} object identical to this PBM image
+     */
     @Override
     public NetPBMImages clone() {
         PBMImage copy = new PBMImage(width, height);
@@ -73,9 +99,6 @@ public class PBMImage implements NetPBMImages {
         return copy;
     }
 
-
-    private String format = "P1";
-
     @Override
     public String getFormat() {
         return format;
@@ -85,6 +108,7 @@ public class PBMImage implements NetPBMImages {
     public void setFormat(String format) {
         this.format = format;
     }
+
     @Override
     public void setWidth(int width) {
         this.width = width;
@@ -94,9 +118,9 @@ public class PBMImage implements NetPBMImages {
     public void setHeight(int height) {
         this.height = height;
     }
+
     @Override
     public void setPixels(Pixel[][] pixels) {
         this.pixels = pixels;
     }
-
 }

@@ -5,53 +5,50 @@ import netpbm.image.PGMImage;
 import netpbm.image.Pixel;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
- * Provides functionality for reading PGM (Portable Graymap, format P2) image files.
- * <p>
- * Parses the plain-text PGM format, skipping comment lines and reading pixel values
- * as grayscale intensities in the range [0, maxVal]. The result is stored as a single-channel image.
+ * Reads PGM (Portable Graymap) image files in P2 format.
+ * Implements the {@code Readers} interface to parse grayscale pixel data.
  */
-
 public class PGMReader implements Readers {
 
-   @Override
-    public  NetPBMImages read(String path) throws IOException {
+    @Override
+    public NetPBMImages read(String path) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line;
 
-            // Skip comments
-            do {
-                line = reader.readLine();
-            } while (line != null && line.startsWith("#"));
-
-            String format = line.trim(); // Should be P2
 
             do {
                 line = reader.readLine();
             } while (line != null && line.startsWith("#"));
+            String format = line.trim();
 
+            do {
+                line = reader.readLine();
+            } while (line != null && line.startsWith("#"));
             String[] dims = line.trim().split("\\s+");
             int width = Integer.parseInt(dims[0]);
             int height = Integer.parseInt(dims[1]);
 
             int maxVal = Integer.parseInt(reader.readLine().trim());
-
             PGMImage image = new PGMImage(width, height, maxVal);
 
-            int y = 0, x = 0;
+            List<Integer> values = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#") || line.isEmpty()) continue;
+                for (String val : line.trim().split("\\s+")) {
+                    values.add(Integer.parseInt(val));
+                }
+            }
 
-                for (String valStr : line.trim().split("\\s+")) {
-                    int val = Integer.parseInt(valStr);
-                    image.setPixel(y, x, new Pixel(val));
-                    x++;
-                    if (x == width) {
-                        x = 0;
-                        y++;
-                    }
-                    if (y == height) break;
+            int index = 0;
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int gray = values.get(index++);
+                    image.setPixel(y, x, new Pixel(gray));
                 }
             }
 
@@ -60,4 +57,5 @@ public class PGMReader implements Readers {
         }
     }
 }
+
 
