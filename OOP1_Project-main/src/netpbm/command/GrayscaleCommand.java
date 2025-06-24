@@ -1,6 +1,8 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
+import netpbm.image.PPMImage;
+import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
@@ -10,13 +12,12 @@ import netpbm.session.SessionManager;
  * Grayscale conversion is applied by averaging the red, green, and blue channel values.
  * Images that are not in color format (P3) are skipped. The session state is saved before modification.
  */
-public class GrayScaleCommand implements Command {
+public class GrayscaleCommand implements Command {
 
     /**
      * Executes the grayscale command.
-     * <p>
-     * Converts each P3 image in the current session to grayscale and logs the operation.
-     * Non-color images are ignored with a warning message.
+     * Converts each PPM image in the current session to grayscale.
+     * Non-color images are skipped with a notice.
      *
      * @param args Command-line arguments (not used).
      */
@@ -30,13 +31,13 @@ public class GrayScaleCommand implements Command {
 
         session.saveState();
 
-        for (NetpbmImage image : session.getImages()) {
-            if (!image.getFormat().equals("P3")) {
+        for (NetPBMImages image : session.getImages()) {
+            if (!(image instanceof PPMImage)) {
                 System.out.println("Skipped (not color): " + image.getFileName());
                 continue;
             }
 
-            convertToGrayscale(image);
+            convertToGrayscale((PPMImage) image);
             System.out.println("Converted to grayscale: " + image.getFileName());
         }
 
@@ -44,21 +45,16 @@ public class GrayScaleCommand implements Command {
     }
 
     /**
-     * Converts the given image to grayscale by averaging its RGB values.
+     * Converts the given color image to grayscale by averaging RGB values.
      *
-     * @param image The image to convert.
+     * @param image The color image to convert.
      */
-    private void convertToGrayscale(NetpbmImage image) {
-        int[][][] pixels = image.getPixels();
+    private void convertToGrayscale(PPMImage image) {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                int r = pixels[y][x][0];
-                int g = pixels[y][x][1];
-                int b = pixels[y][x][2];
-                int gray = (r + g + b) / 3;
-                pixels[y][x][0] = gray;
-                pixels[y][x][1] = gray;
-                pixels[y][x][2] = gray;
+                Pixel p = image.getPixel(y, x);
+                int avg = (p.getRed() + p.getGreen() + p.getBlue()) / 3;
+                image.setPixel(y, x, new Pixel(avg, avg, avg));
             }
         }
     }

@@ -1,9 +1,11 @@
 package netpbm.io;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
+import netpbm.image.PPMImage;
+import netpbm.image.Pixel;
 
 import java.io.*;
-import java.util.*;
+
 
 /**
  * Provides functionality for reading PPM (Portable Pixmap, format P3) image files.
@@ -11,36 +13,59 @@ import java.util.*;
  * Parses the plain-text PPM format, skipping comment lines and reading RGB pixel values.
  * The resulting image is stored with three color channels: red, green, and blue.
  */
-public class PPMReader {
 
-    /**
-     * Reads a PPM (P3) image from the specified file.
-     * <p>
-     * The method expects a valid P3 header, optional comments, and RGB pixel data.
-     *
-     * @param file The PPM file to read.
-     * @return A {@link NetpbmImage} representing the parsed color image.
-     * @throws IOException If the file format is invalid or reading fails.
-     */
-    public static NetpbmImage read(File file) throws IOException {
-        Scanner sc = new Scanner(new BufferedReader(new FileReader(file)));
 
-        String magic = sc.next();
-        if (!magic.equals("P3")) throw new IOException("Invalid PPM format");
+public class PPMReader implements Readers {
 
-        while (sc.hasNext("#.*")) sc.nextLine();
+    @Override
+    public  NetPBMImages read(String path) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
 
-        int width = sc.nextInt();
-        int height = sc.nextInt();
-        int maxVal = sc.nextInt();
+            // Skip comments
+            do {
+                line = reader.readLine();
+            } while (line != null && line.startsWith("#"));
 
-        NetpbmImage img = new NetpbmImage("P3", width, height, maxVal, 3);
+            String format = line.trim(); // Should be P3
 
-        for (int y = 0; y < height; y++)
-            for (int x = 0; x < width; x++)
-                for (int c = 0; c < 3; c++)
-                    img.setPixel(y, x, c, sc.nextInt());
+            do {
+                line = reader.readLine();
+            } while (line != null && line.startsWith("#"));
 
-        return img;
+            String[] dims = line.trim().split("\\s+");
+            int width = Integer.parseInt(dims[0]);
+            int height = Integer.parseInt(dims[1]);
+
+            int maxVal = Integer.parseInt(reader.readLine().trim());
+
+            PPMImage image = new PPMImage(width, height, maxVal);
+
+            int y = 0, x = 0, channel = 0;
+            int[] rgb = new int[3];
+
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#") || line.isEmpty()) continue;
+
+                for (String valStr : line.trim().split("\\s+")) {
+                    rgb[channel] = Integer.parseInt(valStr);
+                    channel++;
+                    if (channel == 3) {
+                        image.setPixel(y, x, new Pixel(rgb[0], rgb[1], rgb[2]));
+                        channel = 0;
+                        x++;
+                        if (x == width) {
+                            x = 0;
+                            y++;
+                        }
+                        if (y == height) break;
+                    }
+                }
+            }
+
+            image.setFileName(new File(path).getName());
+            return image;
+        }
     }
 }
+

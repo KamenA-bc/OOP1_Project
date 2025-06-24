@@ -1,6 +1,6 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
 import netpbm.io.NetpbmWriter;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
@@ -14,13 +14,6 @@ import java.io.File;
  */
 public class SaveAsCommand implements Command {
 
-    /**
-     * Executes the saveas command.
-     * <p>
-     * Saves the first image in the current session to the specified file path.
-     *
-     * @param args Command-line arguments, where {@code args[1]} is the target file name.
-     */
     @Override
     public void execute(String[] args) {
         if (args.length != 2) {
@@ -34,10 +27,12 @@ public class SaveAsCommand implements Command {
             return;
         }
 
-        NetpbmImage image = session.getFirstImage();
+        NetPBMImages image = session.getFirstImage();
 
         try {
-            NetpbmWriter.save(image, new File(args[1]));
+            File output = new File(args[1]);
+            image.setFileName(output.getName());
+            NetpbmWriter.save(image, output);
             System.out.println("Saved first image as: " + args[1]);
         } catch (Exception e) {
             System.out.println("Failed to save as " + args[1] + ": " + e.getMessage());

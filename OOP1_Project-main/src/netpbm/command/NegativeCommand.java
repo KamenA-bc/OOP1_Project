@@ -1,6 +1,7 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
+import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
@@ -14,11 +15,9 @@ import netpbm.session.SessionManager;
 public class NegativeCommand implements Command {
 
     /**
-     * Executes the negative command.
-     * <p>
-     * Applies a color inversion to all P2 and P3 images in the active session.
-     * Skips unsupported P1 (PBM) images and logs actions to the console.
+     * Applies the negative transformation to each image in the active session.
      *
+     * @param args Not used.
      */
     @Override
     public void execute(String[] args) {
@@ -28,42 +27,40 @@ public class NegativeCommand implements Command {
             return;
         }
 
-        session.saveState();
-        int inverted = 0;
+        session.saveState(); // Enable undo
 
-        for (NetpbmImage image : session.getImages()) {
-            String format = image.getFormat();
-
-            if ("P1".equals(format)) {
-                System.out.println("Skipping PBM image: " + image.getFileName());
-                continue;
-            }
-
+        for (NetPBMImages image : session.getImages()) {
             applyNegative(image);
-            System.out.println("Negative applied to: " + image.getFileName());
-            inverted++;
+            System.out.println("Inverted: " + image.getFileName());
         }
 
-        if (inverted > 0) {
-            session.addAlternation("negative");
-        } else {
-            System.out.println("No images were modified.");
-        }
+        session.addAlternation("negative");
     }
 
     /**
-     * Inverts the pixel values of the given image.
+     * Applies the negative filter to the given image.
      *
-     * @param image The image to process.
+     * @param image The image to modify.
      */
-    private void applyNegative(NetpbmImage image) {
-        int[][][] pixels = image.getPixels();
+    private void applyNegative(NetPBMImages image) {
         int maxVal = image.getMaxVal();
 
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                for (int c = 0; c < pixels[y][x].length; c++) {
-                    pixels[y][x][c] = maxVal - pixels[y][x][c];
+                Pixel p = image.getPixel(y, x);
+
+
+                if (image.getFormat().equals("P1")) {
+                    int inverted = (p.getRed() == 0) ? 1 : 0;
+                    image.setPixel(y, x, new Pixel(inverted));
+                } else if (image.getFormat().equals("P2")) {
+                    int inverted = maxVal - p.getRed();
+                    image.setPixel(y, x, new Pixel(inverted));
+                } else if (image.getFormat().equals("P3")) {
+                    int r = maxVal - p.getRed();
+                    int g = maxVal - p.getGreen();
+                    int b = maxVal - p.getBlue();
+                    image.setPixel(y, x, new Pixel(r, g, b));
                 }
             }
         }

@@ -28,8 +28,7 @@ public class CloseCommand implements Command {
             return;
         }
 
-        boolean removed = session.removeImageByName(args[1]);
-        if (removed) {
+        if (session.removeImageByName(args[1])) {
             System.out.println("Removed " + args[1] + " from the active session.");
         } else {
             System.out.println("Image not found in the active session: " + args[1]);

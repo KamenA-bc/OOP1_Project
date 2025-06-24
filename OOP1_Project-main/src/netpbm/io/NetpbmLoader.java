@@ -1,8 +1,8 @@
 package netpbm.io;
 
-import netpbm.image.NetpbmImage;
-
+import netpbm.image.NetPBMImages;
 import java.io.*;
+import java.util.*;
 
 /**
  * Utility class for loading Netpbm images based on their format.
@@ -12,39 +12,46 @@ import java.io.*;
  */
 public class NetpbmLoader {
 
+    private static final Map<String, Readers> readerMap = new HashMap<>();
+
+    // Static block to register known readers
+    static {
+        readerMap.put("P1", new PBMReader());
+        readerMap.put("P2", new PGMReader());
+        readerMap.put("P3", new PPMReader());
+    }
+
     /**
-     * Loads a Netpbm image from the given file.
-     * <p>
-     * The method reads the magic number from the file header and selects
-     * the corresponding reader to parse the file contents.
+     * Loads a NetPBM image using the appropriate reader implementation
+     * based on the magic number (P1, P2, P3) in the file header.
      *
-     * @param file The Netpbm image file to load.
-     * @return A {@link NetpbmImage} object representing the parsed image.
-     * @throws IOException If the format is unsupported or the file cannot be read.
+     * @param file The NetPBM file to load
+     * @return A parsed NetPBMImages object
+     * @throws IOException If the file cannot be read or the format is unsupported
      */
-    public static NetpbmImage load(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String magic = reader.readLine().trim();
-        reader.close();
+    public static NetPBMImages load(File file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
 
-        NetpbmImage image;
+            // Skip comments and blank lines
+            do {
+                line = reader.readLine();
+            } while (line != null && (line.trim().isEmpty() || line.startsWith("#")));
 
-        switch (magic) {
-            case "P1":
-                image = PBMReader.read(file);
-                break;
-            case "P2":
-                image = PGMReader.read(file);
-                break;
-            case "P3":
-                image = PPMReader.read(file);
-                break;
-            default:
-                throw new IOException("Unsupported format: " + magic);
+            if (line == null) {
+                throw new IOException("File is empty or contains only comments");
+            }
+
+            String format = line.trim();
+
+            Readers readerImpl = readerMap.get(format);
+            if (readerImpl == null) {
+                throw new IOException("Unsupported NetPBM format: " + format);
+            }
+
+            // Use the correct reader implementation to load the file
+            return readerImpl.read(file.getPath());
         }
-
-        image.setFileName(file.getName());
-        return image;
     }
 }
 

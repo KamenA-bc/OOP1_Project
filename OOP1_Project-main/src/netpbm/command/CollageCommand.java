@@ -1,8 +1,13 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
+import netpbm.image.PPMImage;
+import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
+import netpbm.image.PGMImage;
+import netpbm.image.PBMImage;
+
 
 /**
  * Command that creates a collage from two loaded images in the active session.
@@ -14,16 +19,6 @@ import netpbm.session.SessionManager;
  */
 public class CollageCommand implements Command {
 
-    /**
-     * Executes the collage command.
-     * <p>
-     * Usage: {@code collage <horizontal|vertical> <image1> <image2> <output>}
-     * Finds the two specified images in the active session, validates their dimensions,
-     * and creates a new collage image based on the given direction. The resulting image
-     * is added to the session with the provided output file name.
-     *
-     * @param args Command-line arguments specifying the direction, image names, and output name.
-     */
     @Override
     public void execute(String[] args) {
         if (args.length != 5) {
@@ -47,10 +42,10 @@ public class CollageCommand implements Command {
             return;
         }
 
-        NetpbmImage img1 = null;
-        NetpbmImage img2 = null;
+        NetPBMImages img1 = null;
+        NetPBMImages img2 = null;
 
-        for (NetpbmImage img : session.getImages()) {
+        for (NetPBMImages img : session.getImages()) {
             if (img.getFileName().equalsIgnoreCase(file1)) {
                 img1 = img;
             } else if (img.getFileName().equalsIgnoreCase(file2)) {
@@ -70,7 +65,7 @@ public class CollageCommand implements Command {
 
         session.saveState();
 
-        NetpbmImage result;
+        NetPBMImages result;
         if (direction.equals("horizontal")) {
             result = createHorizontalCollage(img1, img2);
         } else {
@@ -80,72 +75,76 @@ public class CollageCommand implements Command {
         result.setFileName(output);
         session.addImage(result);
         session.addAlternation("collage " + direction);
-
         System.out.println("Collage created: " + output);
     }
 
-    /**
-     * Creates a horizontal collage by placing two images side by side.
-     */
-    private NetpbmImage createHorizontalCollage(NetpbmImage img1, NetpbmImage img2) {
+    private NetPBMImages createHorizontalCollage(NetPBMImages img1, NetPBMImages img2) {
         int height = img1.getHeight();
         int width = img1.getWidth() * 2;
-        int channels = Math.max(img1.getPixels()[0][0].length, img2.getPixels()[0][0].length);
-        NetpbmImage result = new NetpbmImage("P3", width, height, 255, channels);
-
-        int[][][] p1 = img1.getPixels();
-        int[][][] p2 = img2.getPixels();
-        int[][][] out = result.getPixels();
+        Pixel[][] resultPixels = new Pixel[height][width];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < img1.getWidth(); x++) {
-                copyPixel(p1[y][x], out[y][x]);
-                copyPixel(p2[y][x], out[y][x + img1.getWidth()]);
+                resultPixels[y][x] = img1.getPixel(y, x).clone();
+                resultPixels[y][x + img1.getWidth()] = img2.getPixel(y, x).clone();
             }
         }
 
-        return result;
+        return createTypedImage(width, height, resultPixels);
     }
 
-    /**
-     * Creates a vertical collage by placing two images one above the other.
-     */
-    private NetpbmImage createVerticalCollage(NetpbmImage img1, NetpbmImage img2) {
+    private NetPBMImages createVerticalCollage(NetPBMImages img1, NetPBMImages img2) {
         int width = img1.getWidth();
         int height = img1.getHeight() * 2;
-        int channels = Math.max(img1.getPixels()[0][0].length, img2.getPixels()[0][0].length);
-        NetpbmImage result = new NetpbmImage("P3", width, height, 255, channels);
-
-        int[][][] p1 = img1.getPixels();
-        int[][][] p2 = img2.getPixels();
-        int[][][] out = result.getPixels();
+        Pixel[][] resultPixels = new Pixel[height][width];
 
         for (int y = 0; y < img1.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
-                copyPixel(p1[y][x], out[y][x]);
+                resultPixels[y][x] = img1.getPixel(y, x).clone();
             }
         }
 
         for (int y = 0; y < img2.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
-                copyPixel(p2[y][x], out[y + img1.getHeight()][x]);
+                resultPixels[y + img1.getHeight()][x] = img2.getPixel(y, x).clone();
             }
         }
 
-        return result;
+        return createTypedImage(width, height, resultPixels);
     }
 
-    /**
-     * Copies the values from one pixel array into another.
-     * If the destination has more channels, missing values are duplicated from the first source channel.
-     *
-     * @param source The source pixel array.
-     * @param dest   The destination pixel array.
-     */
-    private void copyPixel(int[] source, int[] dest) {
-        for (int i = 0; i < dest.length; i++) {
-            dest[i] = (i < source.length) ? source[i] : source[0];
+    private NetPBMImages createTypedImage(int width, int height, Pixel[][] pixels) {
+        if (isOnlyBlackWhite(pixels)) {
+            return new PBMImage(width, height, pixels);
+        } else if (isGrayscale(pixels)) {
+            return new PGMImage(width, height, 255, pixels);
+        } else {
+            return new PPMImage(width, height, 255, pixels);
         }
     }
+
+    private boolean isOnlyBlackWhite(Pixel[][] pixels) {
+        for (Pixel[] row : pixels) {
+            for (Pixel p : row) {
+                int r = p.getRed();
+                if ((r != 0 && r != 1) || p.getRed() != p.getGreen() || p.getRed() != p.getBlue()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isGrayscale(Pixel[][] pixels) {
+        for (Pixel[] row : pixels) {
+            for (Pixel p : row) {
+                if (p.getRed() != p.getGreen() || p.getRed() != p.getBlue()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
+
 

@@ -23,7 +23,7 @@ public class CommandMenu {
         commands.put(CommandType.SWITCH, new SwitchCommand());
         commands.put(CommandType.HELP, new HelpCommand());
         commands.put(CommandType.CLOSE, new CloseCommand());
-        commands.put(CommandType.GRAYSCALE, new GrayScaleCommand());
+        commands.put(CommandType.GRAYSCALE, new GrayscaleCommand());
         commands.put(CommandType.SAVE, new SaveCommand());
         commands.put(CommandType.SAVEAS, new SaveAsCommand());
         commands.put(CommandType.NEGATIVE, new NegativeCommand());

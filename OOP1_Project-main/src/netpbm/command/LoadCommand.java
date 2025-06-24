@@ -1,6 +1,6 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
 import netpbm.io.NetpbmLoader;
 import netpbm.session.SessionManager;
 
@@ -18,14 +18,12 @@ public class LoadCommand implements Command {
 
     /**
      * Loads one or more image files into a single new session.
-     * <p>
      * Validates each file path and attempts to parse it using the Netpbm loader.
      * Successfully loaded images are collected and added to a new session,
      * which becomes the currently active one. Errors are reported individually.
      *
      * @param args Command-line input, where args[0] is "load" and the rest are file paths.
      */
-
     @Override
     public void execute(String[] args) {
         if (args.length < 2) {
@@ -33,7 +31,7 @@ public class LoadCommand implements Command {
             return;
         }
 
-        List<NetpbmImage> imagesToLoad = new ArrayList<>();
+        List<NetPBMImages> imagesToLoad = new ArrayList<>();
 
         for (int i = 1; i < args.length; i++) {
             File file = new File(args[i]);
@@ -43,7 +41,7 @@ public class LoadCommand implements Command {
             }
 
             try {
-                NetpbmImage image = NetpbmLoader.load(file);
+                NetPBMImages image = NetpbmLoader.load(file);
                 imagesToLoad.add(image);
                 System.out.println("Loaded: " + file.getName());
             } catch (Exception e) {

@@ -1,6 +1,6 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
 import netpbm.io.NetpbmWriter;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
@@ -14,13 +14,6 @@ import java.io.File;
  */
 public class SaveCommand implements Command {
 
-    /**
-     * Executes the save command.
-     * <p>
-     * Saves each image in the active session using its original file name.
-     * Logs the result of each save operation.
-     *
-     */
     @Override
     public void execute(String[] args) {
         Session session = SessionManager.getActiveSession();
@@ -29,7 +22,7 @@ public class SaveCommand implements Command {
             return;
         }
 
-        for (NetpbmImage image : session.getImages()) {
+        for (NetPBMImages image : session.getImages()) {
             String fileName = image.getFileName();
             if (fileName == null || fileName.isEmpty()) {
                 System.out.println("Skipping unnamed image.");

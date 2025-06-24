@@ -1,6 +1,7 @@
 package netpbm.command;
 
-import netpbm.image.NetpbmImage;
+import netpbm.image.NetPBMImages;
+import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
@@ -12,13 +13,6 @@ import netpbm.session.SessionManager;
  */
 public class RotateCommand implements Command {
 
-    /**
-     * Executes the rotate command.
-     * <p>
-     * Rotates all images in the current session based on the specified direction.
-     *
-     * @param args Command-line arguments. The second argument must be "left" or "right".
-     */
     @Override
     public void execute(String[] args) {
         if (args.length != 2) {
@@ -40,7 +34,7 @@ public class RotateCommand implements Command {
 
         session.saveState();
 
-        for (NetpbmImage image : session.getImages()) {
+        for (NetPBMImages image : session.getImages()) {
             rotateImage(image, direction.equals("left"));
             System.out.println("Rotated image: " + image.getFileName() + " to the " + direction);
         }
@@ -50,34 +44,29 @@ public class RotateCommand implements Command {
 
     /**
      * Rotates the image 90 degrees in the specified direction.
-     * <p>
-     * For left rotation, the image is switched and columns are reversed.
-     * For right rotation, the image is switched and rows are reversed.
-     * The resulting pixel matrix replaces the original, and the width nad height are swapped in the new matrix.
      *
-     * @param image      The image to rotate.
-     * @param rotateLeft {@code true} to rotate 90° left, {@code false} to rotate right.
+     * @param image The image to rotate.
+     * @param rotateLeft If true, rotate left; otherwise, rotate right.
      */
-    private void rotateImage(NetpbmImage image, boolean rotateLeft) {
+    private void rotateImage(NetPBMImages image, boolean rotateLeft) {
         int height = image.getHeight();
         int width = image.getWidth();
-        int channels = image.getPixels()[0][0].length;
-
-        int[][][] original = image.getPixels();
-        int[][][] rotated = new int[width][height][channels];
+        Pixel[][] original = image.getPixels();
+        Pixel[][] rotated = new Pixel[width][height]; // dimensions flipped
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                for (int c = 0; c < channels; c++) {
-                    if (rotateLeft) {
-                        rotated[width - x - 1][y][c] = original[y][x][c];
-                    } else {
-                        rotated[x][height - y - 1][c] = original[y][x][c];
-                    }
+                Pixel current = original[y][x].clone();
+
+                if (rotateLeft) {
+                    rotated[width - x - 1][y] = current;
+                } else {
+                    rotated[x][height - y - 1] = current;
                 }
             }
         }
 
+        // Update image state
         image.setPixels(rotated);
         image.setWidth(height);
         image.setHeight(width);

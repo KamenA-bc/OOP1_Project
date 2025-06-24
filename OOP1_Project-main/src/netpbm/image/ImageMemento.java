@@ -1,40 +1,39 @@
 package netpbm.image;
 
-import netpbm.session.Session;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a snapshot of image states for undo operations.
- * <p>
- * Implements the Memento pattern by capturing deep copies of images at a specific point in time.
- * Used by {@link Session} to restore previous states when an undo is requested.
+ * Stores a deep copy (snapshot) of a list of images,
+ * allowing undo functionality via the Memento pattern.
  */
 public class ImageMemento {
 
-    private final List<NetpbmImage> savedImages;
+    private final List<NetPBMImages> savedImages;
 
     /**
-     * Creates a memento by deep copying the given list of images.
+     * Constructs a memento by deep copying the given list of images.
      *
      * @param imagesToSave The images to capture in their current state.
      */
-    public ImageMemento(List<NetpbmImage> imagesToSave) {
-        savedImages = new ArrayList<>();
-        for (NetpbmImage img : imagesToSave) {
-            savedImages.add(img.clone());
+    public ImageMemento(List<NetPBMImages> imagesToSave) {
+        this.savedImages = new ArrayList<>();
+        for (NetPBMImages image : imagesToSave) {
+            savedImages.add(image.clone());
         }
     }
 
     /**
-     * Returns deep copies of the saved images to restore a previous state.
+     * Returns a deep copy of the saved images.
+     * Each image is cloned again so that restoring the state
+     * does not mutate the original memento.
      *
-     * @return A new list of cloned images from the saved snapshot.
+     * @return A new list of cloned images.
      */
-    public List<NetpbmImage> getRestoredImages() {
-        List<NetpbmImage> restored = new ArrayList<>();
-        for (NetpbmImage img : savedImages) {
-            restored.add(img.clone());
+    public List<NetPBMImages> getRestoredImages() {
+        List<NetPBMImages> restored = new ArrayList<>();
+        for (NetPBMImages image : savedImages) {
+            restored.add(image.clone());
         }
         return restored;
     }
