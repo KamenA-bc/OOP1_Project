@@ -1,126 +1,88 @@
 package netpbm.image;
 
+
+import java.util.ArrayList;
+import java.util.List;
 /**
- * Represents a PBM (Portable BitMap) image using the ASCII-based P1 format.
+ * Represents an ASCII PBM (Portable Bitmap) image in the Netpbm format.
  * <p>
- * This class models black-and-white (binary) images using a two-dimensional
- * array of {@code Pixel} objects, where each pixel is expected to be either black or white.
- * It implements the {@code NetPBMImages} interface, supporting image data access,
- * manipulation, and duplication.
- * </p>
+ * A PBM image stores binary pixel data where each {@link Pixel} is either
+ * black (1) or white (0). This class maintains the image's width, height,
+ * format, and a list of all pixel values.
  */
 public class PBMImage implements NetPBMImages {
 
     private int width;
     private int height;
-    private Pixel[][] pixels;
+    private List<Pixel> pixels = new ArrayList<>();
     private String fileName;
     private String format = "P1";
 
     public PBMImage(int width, int height) {
         this.width = width;
         this.height = height;
-        this.pixels = new Pixel[height][width];
     }
 
-    public PBMImage(int width, int height, Pixel[][] pixels) {
+    public PBMImage(int width, int height, List<Pixel> pixels) {
         this.width = width;
         this.height = height;
         this.pixels = pixels;
         this.format = "P1";
     }
 
-    @Override
-    public int getWidth() {
-        return width;
-    }
+    @Override public int getWidth() { return width; }
+    @Override public int getHeight() { return height; }
 
-    @Override
-    public int getHeight() {
-        return height;
-    }
 
-    /**
-     * Returns the maximum pixel value supported by PBM format.
-     * <p>
-     * For binary images, this value is always 1.
-     * </p>
-     *
-     * @return 1, representing the binary nature of PBM images
-     */
-    @Override
-    public int getMaxVal() {
-        return 1;
-    }
-
-    @Override
-    public Pixel[][] getPixels() {
-        return pixels;
-    }
+    @Override public int getMaxVal() { return 1; }
 
     @Override
     public Pixel getPixel(int y, int x) {
-        return pixels[y][x];
+        for (Pixel p : pixels) {
+            if (p.getX() == x && p.getY() == y) return p;
+        }
+        return null;
     }
 
     @Override
     public void setPixel(int y, int x, Pixel pixel) {
-        pixels[y][x] = pixel;
+        pixel.setX(x);
+        pixel.setY(y);
+        pixels.removeIf(p -> p.getX() == x && p.getY() == y);
+        pixels.add(pixel);
     }
 
     @Override
-    public String getFileName() {
-        return fileName;
+    public List<Pixel> getPixels() {
+        return pixels;
     }
 
     @Override
-    public void setFileName(String name) {
-        this.fileName = name;
+    public void setPixels(List<Pixel> newPixels) {
+        this.pixels = newPixels;
     }
 
+    @Override public String getFileName() { return fileName; }
+    @Override public void setFileName(String name) { this.fileName = name; }
+
+    @Override public String getFormat() { return format; }
+    @Override public void setFormat(String format) { this.format = format; }
+
+    @Override public void setWidth(int width) { this.width = width; }
+    @Override public void setHeight(int height) { this.height = height; }
     /**
-     * Creates a deep copy of the current PBM image.
-     * <p>
-     * All pixel values and metadata are cloned to ensure
-     * complete independence from the original object.
-     * </p>
+     * Creates a deep copy of this PBM image, including cloned pixel data.
      *
-     * @return a new {@code NetPBMImages} object identical to this PBM image
+     * @return a new {@link NetPBMImages} object identical to this one
      */
     @Override
     public NetPBMImages clone() {
-        PBMImage copy = new PBMImage(width, height);
-        copy.setFileName(fileName);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                copy.setPixel(y, x, pixels[y][x].clone());
-            }
+        List<Pixel> copyPixels = new ArrayList<>();
+        for (Pixel p : pixels) {
+            copyPixels.add(p.clone());
         }
+        PBMImage copy = new PBMImage(width, height, copyPixels);
+        copy.setFileName(fileName);
         return copy;
-    }
-
-    @Override
-    public String getFormat() {
-        return format;
-    }
-
-    @Override
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    @Override
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    @Override
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    @Override
-    public void setPixels(Pixel[][] pixels) {
-        this.pixels = pixels;
     }
 }

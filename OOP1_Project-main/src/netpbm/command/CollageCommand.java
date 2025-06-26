@@ -8,6 +8,8 @@ import netpbm.session.SessionManager;
 import netpbm.image.PGMImage;
 import netpbm.image.PBMImage;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -19,15 +21,6 @@ import netpbm.image.PBMImage;
  */
 public class CollageCommand implements Command {
 
-    /**
-     * Executes the collage command.
-     * <p>
-     * Expects arguments: {@code collage <horizontal|vertical> <image1> <image2> <output>}.
-     * Combines two images from the current session into a new one, depending on the specified direction.
-     * </p>
-     *
-     * @param args command-line arguments specifying direction, image names, and output file name
-     */
     @Override
     public void execute(String[] args) {
         if (args.length != 5) {
@@ -51,16 +44,8 @@ public class CollageCommand implements Command {
             return;
         }
 
-        NetPBMImages img1 = null;
-        NetPBMImages img2 = null;
-
-        for (NetPBMImages img : session.getImages()) {
-            if (img.getFileName().equalsIgnoreCase(file1)) {
-                img1 = img;
-            } else if (img.getFileName().equalsIgnoreCase(file2)) {
-                img2 = img;
-            }
-        }
+        NetPBMImages img1 = findImageByName(session, file1);
+        NetPBMImages img2 = findImageByName(session, file2);
 
         if (img1 == null || img2 == null) {
             System.out.println("Both images must be loaded in the session.");
@@ -68,18 +53,15 @@ public class CollageCommand implements Command {
         }
 
         if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
-            System.out.println("Images must have the same width and height.");
+            System.out.println("Images must have the same dimensions.");
             return;
         }
 
         session.saveState();
 
-        NetPBMImages result;
-        if (direction.equals("horizontal")) {
-            result = createHorizontalCollage(img1, img2);
-        } else {
-            result = createVerticalCollage(img1, img2);
-        }
+        NetPBMImages result = direction.equals("horizontal")
+                ? buildHorizontalCollage(img1, img2)
+                : buildVerticalCollage(img1, img2);
 
         result.setFileName(output);
         session.addImage(result);
@@ -87,52 +69,51 @@ public class CollageCommand implements Command {
         System.out.println("Collage created: " + output);
     }
 
-    /**
-     * Combines two images horizontally by placing them side by side.
-     */
-    private NetPBMImages createHorizontalCollage(NetPBMImages img1, NetPBMImages img2) {
+    private NetPBMImages findImageByName(Session session, String name) {
+        for (NetPBMImages img : session.getImages()) {
+            if (img.getFileName().equalsIgnoreCase(name)) {
+                return img;
+            }
+        }
+        return null;
+    }
+
+    private NetPBMImages buildHorizontalCollage(NetPBMImages img1, NetPBMImages img2) {
+        int newWidth = img1.getWidth() * 2;
         int height = img1.getHeight();
-        int width = img1.getWidth() * 2;
-        Pixel[][] resultPixels = new Pixel[height][width];
+        List<Pixel> resultPixels = new ArrayList<>();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < img1.getWidth(); x++) {
-                resultPixels[y][x] = img1.getPixel(y, x).clone();
-                resultPixels[y][x + img1.getWidth()] = img2.getPixel(y, x).clone();
-            }
+        for (Pixel p : img1.getPixels()) {
+            resultPixels.add(new Pixel(p.getX(), p.getY(), p.getRed(), p.getGreen(), p.getBlue()));
         }
 
-        return createTypedImage(width, height, resultPixels);
+        for (Pixel p : img2.getPixels()) {
+            int newX = p.getX() + img1.getWidth();
+            resultPixels.add(new Pixel(newX, p.getY(), p.getRed(), p.getGreen(), p.getBlue()));
+        }
+
+        return buildTypedImage(newWidth, height, resultPixels);
     }
 
-    /**
-     * Combines two images vertically by placing one below the other.
-     */
-    private NetPBMImages createVerticalCollage(NetPBMImages img1, NetPBMImages img2) {
+    private NetPBMImages buildVerticalCollage(NetPBMImages img1, NetPBMImages img2) {
         int width = img1.getWidth();
-        int height = img1.getHeight() * 2;
-        Pixel[][] resultPixels = new Pixel[height][width];
+        int newHeight = img1.getHeight() * 2;
+        List<Pixel> resultPixels = new ArrayList<>();
 
-        for (int y = 0; y < img1.getHeight(); y++) {
-            for (int x = 0; x < width; x++) {
-                resultPixels[y][x] = img1.getPixel(y, x).clone();
-            }
+        for (Pixel p : img1.getPixels()) {
+            resultPixels.add(new Pixel(p.getX(), p.getY(), p.getRed(), p.getGreen(), p.getBlue()));
         }
 
-        for (int y = 0; y < img2.getHeight(); y++) {
-            for (int x = 0; x < width; x++) {
-                resultPixels[y + img1.getHeight()][x] = img2.getPixel(y, x).clone();
-            }
+        for (Pixel p : img2.getPixels()) {
+            int newY = p.getY() + img1.getHeight();
+            resultPixels.add(new Pixel(p.getX(), newY, p.getRed(), p.getGreen(), p.getBlue()));
         }
 
-        return createTypedImage(width, height, resultPixels);
+        return buildTypedImage(width, newHeight, resultPixels);
     }
 
-    /**
-     * Creates a new image of the appropriate type (PBM, PGM, or PPM) based on pixel content.
-     */
-    private NetPBMImages createTypedImage(int width, int height, Pixel[][] pixels) {
-        if (isOnlyBlackWhite(pixels)) {
+    private NetPBMImages buildTypedImage(int width, int height, List<Pixel> pixels) {
+        if (isBlackWhite(pixels)) {
             return new PBMImage(width, height, pixels);
         } else if (isGrayscale(pixels)) {
             return new PGMImage(width, height, 255, pixels);
@@ -141,34 +122,23 @@ public class CollageCommand implements Command {
         }
     }
 
-    /**
-     * Checks whether the image contains only black (0) and white (1) pixels.
-     */
-    private boolean isOnlyBlackWhite(Pixel[][] pixels) {
-        for (Pixel[] row : pixels) {
-            for (Pixel p : row) {
-                int r = p.getRed();
-                if ((r != 0 && r != 1) || p.getRed() != p.getGreen() || p.getRed() != p.getBlue()) {
-                    return false;
-                }
+    private boolean isBlackWhite(List<Pixel> pixels) {
+        for (Pixel p : pixels) {
+            int r = p.getRed();
+            if ((r != 0 && r != 1) || p.getGreen() != r || p.getBlue() != r) {
+                return false;
             }
         }
         return true;
     }
 
-    /**
-     * Checks whether the image is grayscale (all RGB values are equal).
-     */
-    private boolean isGrayscale(Pixel[][] pixels) {
-        for (Pixel[] row : pixels) {
-            for (Pixel p : row) {
-                if (p.getRed() != p.getGreen() || p.getRed() != p.getBlue()) {
-                    return false;
-                }
+    private boolean isGrayscale(List<Pixel> pixels) {
+        for (Pixel p : pixels) {
+            if (p.getRed() != p.getGreen() || p.getRed() != p.getBlue()) {
+                return false;
             }
         }
         return true;
     }
 }
-
 

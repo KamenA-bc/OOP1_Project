@@ -5,6 +5,9 @@ import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Command for applying a negative (color inversion) effect to all images in the active session.
  * <p>
@@ -16,10 +19,8 @@ public class NegativeCommand implements Command {
 
     /**
      * Executes the negative command.
-     * <p>
      * Inverts all images in the current session by modifying pixel values
      * based on their format. Stores the previous state for undo functionality.
-     * </p>
      *
      * @param args not used for this command
      */
@@ -43,35 +44,35 @@ public class NegativeCommand implements Command {
 
     /**
      * Applies a negative transformation to the specified image.
-     * <p>
-     * For PBM: flips 0 to 1 and vice versa.
-     * For PGM: subtracts pixel value from max grayscale value.
-     * For PPM: inverts each RGB channel independently.
-     * </p>
+     * For PBM: flips 0 and 1.
+     * For PGM: subtracts grayscale from maxVal.
+     * For PPM: inverts each RGB channel.
      *
      * @param image the image to transform
      */
     private void applyNegative(NetPBMImages image) {
         int maxVal = image.getMaxVal();
+        List<Pixel> updated = new ArrayList<>();
 
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                Pixel p = image.getPixel(y, x);
+        for (Pixel p : image.getPixels()) {
+            int x = p.getX();
+            int y = p.getY();
 
-                if (image.getFormat().equals("P1")) {
-                    int inverted = (p.getRed() == 0) ? 1 : 0;
-                    image.setPixel(y, x, new Pixel(inverted));
-                } else if (image.getFormat().equals("P2")) {
-                    int inverted = maxVal - p.getRed();
-                    image.setPixel(y, x, new Pixel(inverted));
-                } else if (image.getFormat().equals("P3")) {
-                    int r = maxVal - p.getRed();
-                    int g = maxVal - p.getGreen();
-                    int b = maxVal - p.getBlue();
-                    image.setPixel(y, x, new Pixel(r, g, b));
-                }
+            if (image.getFormat().equals("P1")) {
+                int inverted = (p.getRed() == 0) ? 1 : 0;
+                updated.add(new Pixel(x, y, inverted));
+            } else if (image.getFormat().equals("P2")) {
+                int inverted = maxVal - p.getRed();
+                updated.add(new Pixel(x, y, inverted));
+            } else if (image.getFormat().equals("P3")) {
+                int r = maxVal - p.getRed();
+                int g = maxVal - p.getGreen();
+                int b = maxVal - p.getBlue();
+                updated.add(new Pixel(x, y, r, g, b));
             }
         }
+
+        image.setPixels(updated);
     }
 }
 

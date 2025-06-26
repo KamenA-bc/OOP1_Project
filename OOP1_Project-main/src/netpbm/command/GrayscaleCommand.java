@@ -6,6 +6,9 @@ import netpbm.image.Pixel;
 import netpbm.session.Session;
 import netpbm.session.SessionManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Command that converts all color (P3) images in the active session to grayscale.
  * <p>
@@ -45,18 +48,19 @@ public class GrayscaleCommand implements Command {
     }
 
     /**
-     * Converts the given color image to grayscale by averaging RGB values.
+     * Converts the given PPM image to grayscale by averaging its RGB values.
      *
-     * @param image The color image to convert.
+     * @param image the color image to convert
      */
     private void convertToGrayscale(PPMImage image) {
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                Pixel p = image.getPixel(y, x);
-                int avg = (p.getRed() + p.getGreen() + p.getBlue()) / 3;
-                image.setPixel(y, x, new Pixel(avg, avg, avg));
-            }
+        List<Pixel> newPixels = new ArrayList<>();
+
+        for (Pixel p : image.getPixels()) {
+            int avg = (p.getRed() + p.getGreen() + p.getBlue()) / 3;
+            newPixels.add(new Pixel(p.getX(), p.getY(), avg, avg, avg));
         }
+
+        image.setPixels(newPixels);
     }
 }
 

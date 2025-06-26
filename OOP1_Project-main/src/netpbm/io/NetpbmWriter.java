@@ -4,6 +4,7 @@ import netpbm.image.NetPBMImages;
 import netpbm.image.Pixel;
 
 import java.io.*;
+import java.util.List;
 
 /**
  * Utility class for writing NetPBM images (PBM, PGM, PPM) to files.
@@ -16,14 +17,12 @@ public class NetpbmWriter {
 
     /**
      * Saves a {@code NetPBMImages} object to the specified file using its native NetPBM format.
-     * <p>
-     * The output includes the format identifier, dimensions, optional max value,
-     * and the image's pixel data formatted according to the type (P1, P2, or P3).
-     * </p>
+     * The output includes format identifier, dimensions, optional max value,
+     * and pixel data in row-major order.
      *
-     * @param img  the image object to be saved
+     * @param img  the image to be saved
      * @param file the destination file
-     * @throws IOException if writing to the file fails
+     * @throws IOException if writing fails
      */
     public static void save(NetPBMImages img, File file) throws IOException {
         try (PrintWriter out = new PrintWriter(file)) {
@@ -38,25 +37,35 @@ public class NetpbmWriter {
                 out.println(img.getMaxVal());
             }
 
-            Pixel[][] pixels = img.getPixels();
+            List<Pixel> pixels = img.getPixels();
 
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    Pixel p = pixels[y][x];
+                    Pixel p = findPixelAt(pixels, x, y);
 
-                    if (format.equals("P3")) {
-                        out.print(p.getRed() + " ");
-                        out.print(p.getGreen() + " ");
-                        out.print(p.getBlue() + " ");
-                    } else if (format.equals("P2")) {
-                        out.print(p.getRed() + " ");
-                    } else if (format.equals("P1")) {
+                    if (p == null) {
+                        out.print("0 "); // default to black or blank
+                    } else if (format.equals("P3")) {
+                        out.print(p.getRed() + " " + p.getGreen() + " " + p.getBlue() + " ");
+                    } else {
                         out.print(p.getRed() + " ");
                     }
                 }
                 out.println();
             }
         }
+    }
+
+    /**
+     * Searches for a pixel at (x, y) in the provided list.
+     */
+    private static Pixel findPixelAt(List<Pixel> pixels, int x, int y) {
+        for (Pixel p : pixels) {
+            if (p.getX() == x && p.getY() == y) {
+                return p;
+            }
+        }
+        return null;
     }
 }
 

@@ -17,7 +17,7 @@ public class NetpbmLoader {
     /** Maps format identifiers (P1, P2, P3) to their corresponding reader implementations. */
     private static final Map<String, Readers> readerMap = new HashMap<>();
 
-    // Static initialization block to populate the reader map.
+
     static {
         readerMap.put("P1", new PBMReader());
         readerMap.put("P2", new PGMReader());

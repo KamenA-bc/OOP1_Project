@@ -32,6 +32,6 @@ public class CreateRandomPPMImage {
     }
     public static void main(String[] args) {
         CreateRandomPPMImage image = new CreateRandomPPMImage();
-        image.createPPMImage("example2.ppm");
+        image.createPPMImage("test4.ppm");
     }
 }

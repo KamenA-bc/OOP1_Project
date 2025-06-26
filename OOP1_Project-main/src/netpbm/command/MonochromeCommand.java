@@ -26,8 +26,7 @@ public class MonochromeCommand implements Command {
         int converted = 0;
 
         for (NetPBMImages image : session.getImages()) {
-            String format = image.getFormat();
-            if (format.equals("P1")) continue; // Already monochrome
+            if (image.getFormat().equals("P1")) continue;
 
             if (isAlreadyBinary(image)) {
                 System.out.println("Image '" + image.getFileName() + "' is already black and white. Skipping.");
@@ -47,36 +46,35 @@ public class MonochromeCommand implements Command {
     }
 
     /**
-     * Checks if all pixel values are already 0 or 1.
+     * Checks if all pixel RGB values are either (0,0,0) or (1,1,1).
      */
     private boolean isAlreadyBinary(NetPBMImages image) {
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int val = image.getPixel(y, x).getRed();
-                if (val != 0 && val != 1) return false;
+        for (Pixel p : image.getPixels()) {
+            int r = p.getRed(), g = p.getGreen(), b = p.getBlue();
+            if (!((r == 0 && g == 0 && b == 0) || (r == 1 && g == 1 && b == 1))) {
+                return false;
             }
         }
         return true;
     }
 
     /**
-     * Converts an image to pure black & white using a brightness threshold.
-     * Pixels are set to 1 if brightness > 127, else 0.
-     * The format is also changed to "P1" to indicate PBM.
+     * Converts the image to black & white (PBM) using a threshold on brightness.
+     * Sets all three RGB channels to 0 or 1.
      */
     private void convertToMonochrome(NetPBMImages image) {
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                Pixel p = image.getPixel(y, x);
-                int brightness = (p.getRed() + p.getGreen() + p.getBlue()) / 3;
-                int binary = (brightness > 127) ? 1 : 0;
-                image.setPixel(y, x, new Pixel(binary));
-            }
+        for (Pixel p : image.getPixels()) {
+            int brightness = (p.getRed() + p.getGreen() + p.getBlue()) / 3;
+            int binary = brightness > 127 ? 1 : 0;
+            p.setRed(binary);
+            p.setGreen(binary);
+            p.setBlue(binary);
         }
 
         image.setFormat("P1");
     }
 }
+
 
 
 
